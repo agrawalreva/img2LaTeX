@@ -1,7 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="img2LaTeX API")
+from .db.base import engine
+from .db.models import Base
+from .routers import infer
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="VisionLaTeX Studio API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -10,6 +17,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(infer.router, prefix="/api")
 
 
 @app.get("/health")
