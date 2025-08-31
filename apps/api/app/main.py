@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .db.base import engine
 from .db.models import Base
-from .routers import infer, history, dataset
+from .routers import infer, history, dataset, train
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -22,6 +22,7 @@ app.add_middleware(
 app.include_router(infer.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(dataset.router, prefix="/api")
+app.include_router(train.router, prefix="/api")
 
 
 @app.get("/health")
