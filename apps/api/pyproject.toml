@@ -1,7 +1,7 @@
 [project]
-name = "img2LaTeX"
+name = "visionlatex-api"
 version = "0.1.0"
-description = "img2LaTeX API"
+description = "VisionLaTeX Studio API"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.104.0",
@@ -12,6 +12,12 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "python-multipart>=0.0.6",
     "pillow>=10.0.0",
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "unsloth>=2024.1",
+    "accelerate>=0.24.0",
+    "bitsandbytes>=0.41.0",
+    "xformers>=0.0.22",
 ]
 
 [project.optional-dependencies]
