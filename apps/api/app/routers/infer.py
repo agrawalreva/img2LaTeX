@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from ..db.base import get_db
 from ..db.repository import InferenceRepository
 from ..core.config import settings
+from ..services.infer import run_inference_service
 
 router = APIRouter()
 
@@ -32,28 +33,26 @@ async def infer(
         content = await image.read()
         buffer.write(content)
     
-    # Mock inference (will be replaced with real model in Step 8)
-    start_time = time.time()
-    
-    # Simulate processing time
-    time.sleep(0.1)
-    
-    # Mock LaTeX output
-    mock_latex = "E = mc^2"
-    tokens_used = 12
-    time_ms = int((time.time() - start_time) * 1000)
+    # Run real inference
+    try:
+        latex_output, tokens_used, time_ms = await run_inference_service(file_path)
+    except HTTPException:
+        # Clean up uploaded file on error
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise
     
     # Save inference record
     record = InferenceRepository.create(
         db=db,
         image_path=file_path,
-        latex_output=mock_latex,
+        latex_output=latex_output,
         tokens_used=tokens_used,
         time_ms=time_ms
     )
     
     return {
-        "latex": mock_latex,
+        "latex": latex_output,
         "tokens": tokens_used,
         "time_ms": time_ms,
         "id": record.id
