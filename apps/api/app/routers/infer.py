@@ -4,10 +4,10 @@ from typing import Dict, Any
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from ..db.base import get_db
-from ..db.repository import InferenceRepository
-from ..core.config import settings
-from ..services.infer import run_inference_service
+from app.db.base import get_db
+from app.db.repository import InferenceRepository
+from app.core.config import settings
+from app.services.infer import run_inference_service
 
 router = APIRouter()
 

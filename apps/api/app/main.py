@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .db.base import engine
-from .db.models import Base
-from .routers import infer, history, dataset, train, models
+from app.db.base import engine
+from app.db.models import Base
+from app.routers import infer, history, dataset, train, models
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
