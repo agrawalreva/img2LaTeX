@@ -1,1 +1,1 @@
-# img2LaTeX
+# img2LaTeX AI
