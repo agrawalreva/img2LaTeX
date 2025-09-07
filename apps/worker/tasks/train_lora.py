@@ -2,6 +2,7 @@ import os
 import json
 import time
 import uuid
+import torch
 from typing import Dict, Any
 from celery import current_task
 from sqlalchemy import create_engine
@@ -19,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../apps/api'))
 from app.db.models import Pair, TrainJob
 from app.db.repository import TrainJobRepository
 from app.core.config import settings
+from ..celery_app import celery_app
 
 def get_db_session():
     """Get database session for worker."""

@@ -43,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-sm border-r flex flex-col">
         <div className="p-6 border-b border-slate-100">
-          <h1 className="text-xl font-bold text-slate-800">VisionLaTeX Studio</h1>
+          <h1 className="text-xl font-bold text-slate-800">img2LaTeX AI</h1>
         </div>
         
         <nav className="flex-1 p-4">

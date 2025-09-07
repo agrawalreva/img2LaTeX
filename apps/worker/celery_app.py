@@ -6,7 +6,7 @@ load_dotenv()
 
 # Celery configuration
 celery_app = Celery(
-    "visionlatex_worker",
+    "img2latex_ai_worker",
     broker=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
     backend=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
     include=["apps.worker.tasks.train_lora"]

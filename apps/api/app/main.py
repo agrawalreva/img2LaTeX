@@ -8,7 +8,7 @@ from app.routers import infer, history, dataset, train, models
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="VisionLaTeX Studio API")
+app = FastAPI(title="img2LaTeX AI API")
 
 app.add_middleware(
     CORSMiddleware,
