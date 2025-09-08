@@ -21,17 +21,30 @@ def get_model_and_tokenizer():
     if _model is None or _tokenizer is None:
         print("Loading Qwen2-VL model...")
         
-        # Load 4-bit model
-        _model, _tokenizer = FastVisionModel.from_pretrained(
-            "unsloth/Qwen2-VL-7B-Instruct",
-            load_in_4bit=True,
-            use_gradient_checkpointing="unsloth"
-        )
+        # Check if CUDA is available
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+        if device == "cuda":
+            # Load 4-bit model for GPU
+            _model, _tokenizer = FastVisionModel.from_pretrained(
+                "unsloth/Qwen2-VL-7B-Instruct",
+                load_in_4bit=True,
+                use_gradient_checkpointing="unsloth"
+            )
+        else:
+            # Load full precision model for CPU (will be slower but more compatible)
+            print("Loading full precision model for CPU inference...")
+            _model, _tokenizer = FastVisionModel.from_pretrained(
+                "unsloth/Qwen2-VL-7B-Instruct",
+                load_in_4bit=False,
+                use_gradient_checkpointing="unsloth",
+                torch_dtype=torch.float32
+            )
         
         # Switch to inference mode
         FastVisionModel.for_inference(_model)
         
-        print("Model loaded successfully!")
+        print(f"Model loaded successfully on {device}!")
     
     return _model, _tokenizer
 
@@ -59,8 +72,9 @@ def run_inference(image_path: str, max_new_tokens: int = 256, temperature: float
     
     try:
         # Check if CUDA is available
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA not available. GPU required for inference.")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if device == "cpu":
+            print("Warning: CUDA not available, using CPU (this will be slow)")
         
         # Load model and tokenizer
         model, tokenizer = get_model_and_tokenizer()
@@ -88,7 +102,7 @@ def run_inference(image_path: str, max_new_tokens: int = 256, temperature: float
             image, input_text,
             add_special_tokens=False,
             return_tensors="pt",
-        ).to("cuda")
+        ).to(device)
         
         # Generate
         with torch.no_grad():

@@ -33,7 +33,7 @@ async def infer(
         content = await image.read()
         buffer.write(content)
     
-    # Run real inference
+    # Run inference
     try:
         latex_output, tokens_used, time_ms = await run_inference_service(file_path)
     except HTTPException:
@@ -57,3 +57,40 @@ async def infer(
         "time_ms": time_ms,
         "id": record.id
     }
+
+
+@router.get("/sample-images")
+async def get_sample_images() -> Dict[str, Any]:
+    """Get list of sample images for testing."""
+    sample_images = [
+        {
+            "id": "sample1",
+            "name": "Gaussian Integral",
+            "description": "Classic Gaussian integral formula",
+            "url": "/api/sample-images/gaussian_integral.png",
+            "expected_latex": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
+        },
+        {
+            "id": "sample2", 
+            "name": "Quadratic Formula",
+            "description": "Standard quadratic formula",
+            "url": "/api/sample-images/quadratic_formula.png",
+            "expected_latex": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"
+        },
+        {
+            "id": "sample3",
+            "name": "Euler's Identity",
+            "description": "Beautiful mathematical identity",
+            "url": "/api/sample-images/eulers_identity.png", 
+            "expected_latex": "e^{i\\pi} + 1 = 0"
+        },
+        {
+            "id": "sample4",
+            "name": "Pythagorean Theorem",
+            "description": "Fundamental geometry theorem",
+            "url": "/api/sample-images/pythagorean.png",
+            "expected_latex": "a^2 + b^2 = c^2"
+        }
+    ]
+    
+    return {"sample_images": sample_images}
