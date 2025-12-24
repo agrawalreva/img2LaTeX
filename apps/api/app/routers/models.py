@@ -77,6 +77,7 @@ async def get_generation_settings() -> GenerationSettings:
 async def update_generation_settings(
     settings_update: GenerationSettings
 ) -> GenerationSettings:
-    # For now, just return the updated settings
-    # In production, this would update the actual model settings
+    settings.max_new_tokens = settings_update.max_new_tokens
+    settings.temperature = settings_update.temperature
+    settings.min_p = settings_update.min_p
     return settings_update
