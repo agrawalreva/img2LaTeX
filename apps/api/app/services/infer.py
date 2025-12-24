@@ -1,27 +1,26 @@
 import os
-import time
+import sys
+from pathlib import Path
 from typing import Tuple
 from fastapi import HTTPException
-from PIL import Image
 
-# Simple ML inference based on the Colab example
+# Add project root to path for model imports
+project_root = Path(__file__).parent.parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from models.inference.unsloth_qwen import run_inference
+
+
 async def run_inference_service(image_path: str) -> Tuple[str, int, int]:
-    """
-    Simple image-to-LaTeX inference service.
-    Uses the same approach as the Colab notebook.
-    """
+    """Run model inference on image to generate LaTeX."""
     try:
-        # For now, return mock results
-        # In production, this would load the actual model and run inference
-        time.sleep(1.0)  # Simulate processing time
-        
-        # Mock LaTeX output based on common mathematical expressions
-        mock_latex = "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
-        tokens_used = 25
-        time_ms = 1000
-        
-        return mock_latex, tokens_used, time_ms
-        
+        latex_output, tokens_used, time_ms = run_inference(
+            image_path,
+            max_new_tokens=256,
+            temperature=0.7,
+            min_p=0.1
+        )
+        return latex_output, tokens_used, time_ms
     except Exception as e:
         raise HTTPException(
             status_code=500,
