@@ -4,7 +4,13 @@ import torch
 from typing import Optional, Dict, Any
 from pathlib import Path
 
-from unsloth import FastVisionModel
+try:
+    from unsloth import FastVisionModel
+    UNSLOTH_AVAILABLE = True
+except (ImportError, NotImplementedError):
+    UNSLOTH_AVAILABLE = False
+    FastVisionModel = None
+
 from .unsloth_qwen import get_model_and_tokenizer
 
 class ModelManager:

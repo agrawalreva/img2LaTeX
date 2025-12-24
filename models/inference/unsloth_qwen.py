@@ -6,8 +6,13 @@ from typing import Optional, Tuple
 from PIL import Image
 import torch
 
-from unsloth import FastVisionModel
-from transformers import TextStreamer
+try:
+    from unsloth import FastVisionModel
+    UNSLOTH_AVAILABLE = True
+except (ImportError, NotImplementedError):
+    UNSLOTH_AVAILABLE = False
+    from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+    FastVisionModel = None
 
 # Global model and tokenizer instances
 _model = None
@@ -21,28 +26,38 @@ def get_model_and_tokenizer():
     if _model is None or _tokenizer is None:
         print("Loading Qwen2-VL model...")
         
-        # Check if CUDA is available
         device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        if device == "cuda":
-            # Load 4-bit model for GPU
-            _model, _tokenizer = FastVisionModel.from_pretrained(
-                "unsloth/Qwen2-VL-7B-Instruct",
-                load_in_4bit=True,
-                use_gradient_checkpointing="unsloth"
-            )
+        if UNSLOTH_AVAILABLE:
+            if device == "cuda":
+                _model, _tokenizer = FastVisionModel.from_pretrained(
+                    "unsloth/Qwen2-VL-7B-Instruct",
+                    load_in_4bit=True,
+                    use_gradient_checkpointing="unsloth"
+                )
+            else:
+                print("Loading full precision model for CPU inference...")
+                _model, _tokenizer = FastVisionModel.from_pretrained(
+                    "unsloth/Qwen2-VL-7B-Instruct",
+                    load_in_4bit=False,
+                    use_gradient_checkpointing="unsloth",
+                    torch_dtype=torch.float32
+                )
+            FastVisionModel.for_inference(_model)
         else:
-            # Load full precision model for CPU (will be slower but more compatible)
-            print("Loading full precision model for CPU inference...")
-            _model, _tokenizer = FastVisionModel.from_pretrained(
-                "unsloth/Qwen2-VL-7B-Instruct",
-                load_in_4bit=False,
-                use_gradient_checkpointing="unsloth",
-                torch_dtype=torch.float32
+            print("Unsloth not available, using transformers library...")
+            model_name = "Qwen/Qwen2-VL-7B-Instruct"
+            print(f"Downloading model {model_name} (this may take several minutes)...")
+            _processor = AutoProcessor.from_pretrained(model_name)
+            print("Loading model weights (this may take several minutes on CPU)...")
+            _model = Qwen2VLForConditionalGeneration.from_pretrained(
+                model_name,
+                torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+                device_map="auto" if device == "cuda" else None,
+                low_cpu_mem_usage=True
             )
-        
-        # Switch to inference mode
-        FastVisionModel.for_inference(_model)
+            # Store processor, not just tokenizer, for Qwen2VL
+            _tokenizer = _processor
         
         print(f"Model loaded successfully on {device}!")
     

@@ -12,11 +12,9 @@ from app.db.base import get_db
 from app.db.repository import TrainJobRepository, PairRepository
 from app.core.config import settings
 
-# Add worker path for Celery import
+# Celery import will be done lazily when needed
 worker_path = Path(__file__).parent.parent.parent.parent.parent / "apps" / "worker"
 sys.path.insert(0, str(worker_path))
-
-from apps.worker.tasks.train_lora import train_lora
 
 router = APIRouter()
 
@@ -50,7 +48,14 @@ async def start_training(
         config=config_json
     )
     
-    train_lora.delay(job_id, config_dict)
+    try:
+        from apps.worker.tasks.train_lora import train_lora
+        train_lora.delay(job_id, config_dict)
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail="Training worker not available. Celery not configured."
+        )
     
     return {
         "job_id": job_id,

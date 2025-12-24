@@ -6,9 +6,10 @@ interface UploadZoneProps {
   onImageSelect: (file: File) => void
   selectedImage?: File | null
   onClearImage: () => void
+  onSampleImageDrop?: (sampleData: any) => void
 }
 
-export default function UploadZone({ onImageSelect, selectedImage, onClearImage }: UploadZoneProps) {
+export default function UploadZone({ onImageSelect, selectedImage, onClearImage, onSampleImageDrop }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -25,13 +26,28 @@ export default function UploadZone({ onImageSelect, selectedImage, onClearImage 
     e.preventDefault()
     setIsDragOver(false)
     
+    // Check if it's a sample image drop
+    const sampleData = e.dataTransfer.getData('application/json')
+    if (sampleData) {
+      try {
+        const sample = JSON.parse(sampleData)
+        if (onSampleImageDrop) {
+          onSampleImageDrop(sample)
+        }
+        return
+      } catch (err) {
+        console.error('Failed to parse sample data:', err)
+      }
+    }
+    
+    // Handle regular file drop
     const files = Array.from(e.dataTransfer.files)
     const imageFile = files.find(file => file.type.startsWith('image/'))
     
     if (imageFile) {
       onImageSelect(imageFile)
     }
-  }, [onImageSelect])
+  }, [onImageSelect, onSampleImageDrop])
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

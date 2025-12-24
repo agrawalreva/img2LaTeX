@@ -1,32 +1,8 @@
 # img2LaTeX AI
 
-End-to-end image-to-LaTeX conversion system using Qwen2-VL-7B vision-language model with LoRA fine-tuning support.
-
-## Features
-
-- Real-time LaTeX generation from equation images
-- LoRA fine-tuning pipeline for custom datasets
-- Dataset management and evaluation tools
-- Model versioning and adapter switching
-- Docker containerization
-
-## Architecture
-
-- **API**: FastAPI backend with SQLAlchemy ORM
-- **Web**: React/TypeScript frontend with Tailwind CSS
-- **Worker**: Celery-based async training jobs
-- **Model**: Qwen2-VL-7B with Unsloth for 4-bit quantization
-- **Database**: SQLite with Alembic migrations
-- **Queue**: Redis for Celery task queue
+image-to-LaTeX conversion system using Qwen2-VL-7B vision-language model with LoRA fine-tuning.
 
 ## Setup
-
-### Prerequisites
-
-- Docker and Docker Compose
-- CUDA-capable GPU (recommended) or CPU
-
-### Quick Start
 
 ```bash
 # Build and start all services
@@ -110,7 +86,3 @@ models/
   inference/    # Model loading and inference
   training/     # Training outputs
 ```
-
-## License
-
-MIT

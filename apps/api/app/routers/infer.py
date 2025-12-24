@@ -64,32 +64,25 @@ async def get_sample_images() -> Dict[str, Any]:
     """Get list of sample images for testing."""
     sample_images = [
         {
-            "id": "sample1",
-            "name": "Gaussian Integral",
-            "description": "Classic Gaussian integral formula",
-            "url": "/api/sample-images/gaussian_integral.png",
-            "expected_latex": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
-        },
-        {
-            "id": "sample2", 
-            "name": "Quadratic Formula",
-            "description": "Standard quadratic formula",
-            "url": "/api/sample-images/quadratic_formula.png",
-            "expected_latex": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"
-        },
-        {
-            "id": "sample3",
-            "name": "Euler's Identity",
-            "description": "Beautiful mathematical identity",
-            "url": "/api/sample-images/eulers_identity.png", 
+            "id": "eulers_equation",
+            "name": "Euler's Equation",
+            "description": "Euler's famous equation",
+            "url": "/static/samples/Eulers-equation.png",
             "expected_latex": "e^{i\\pi} + 1 = 0"
         },
         {
-            "id": "sample4",
-            "name": "Pythagorean Theorem",
-            "description": "Fundamental geometry theorem",
-            "url": "/api/sample-images/pythagorean.png",
-            "expected_latex": "a^2 + b^2 = c^2"
+            "id": "equation2", 
+            "name": "Mathematical Equation",
+            "description": "Complex mathematical expression",
+            "url": "/static/samples/equation2.jpeg",
+            "expected_latex": "\\frac{d}{dx}[f(x)] = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"
+        },
+        {
+            "id": "long_equation",
+            "name": "Long Equation",
+            "description": "Extended mathematical formula",
+            "url": "/static/samples/long_equation.jpg", 
+            "expected_latex": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
         }
     ]
     
