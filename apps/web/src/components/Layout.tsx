@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Database, Train, History } from 'lucide-react'
+import { Home, Database, Train, History, TrendingUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import HistoryPanel from './HistoryPanel'
 
@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Dataset', href: '/dataset', icon: Database },
   { name: 'Train', href: '/train', icon: Train },
+  { name: 'Evaluate', href: '/evaluate', icon: TrendingUp },
 ]
 
 interface HistoryItem {
