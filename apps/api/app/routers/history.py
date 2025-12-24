@@ -19,19 +19,10 @@ async def get_history(
     
     history_items = []
     for record in records:
-        # Convert absolute path to relative URL for serving
-        image_url = record.image_path
-        if image_url.startswith('/'):
-            # Already absolute path
-            pass
-        elif 'uploads' in image_url:
-            # Extract relative path
-            if 'uploads/' in image_url:
-                image_url = '/api/' + image_url.split('uploads/')[-1] if 'uploads/' in image_url else image_url
-            else:
-                image_url = '/api/uploads/' + image_url.split('/')[-1]
-        else:
-            image_url = '/api/uploads/' + image_url.split('/')[-1]
+        # Convert file path to URL for serving
+        import os
+        filename = os.path.basename(record.image_path)
+        image_url = f"/api/uploads/{filename}"
         
         history_items.append({
             "id": record.id,
