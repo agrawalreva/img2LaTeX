@@ -1,8 +1,17 @@
+import os
+import sys
+from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from app.core.config import settings
+
+# Add project root to path for model imports
+project_root = Path(__file__).parent.parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from models.inference.model_manager import model_manager
 
 router = APIRouter()
 
@@ -19,29 +28,39 @@ class GenerationSettings(BaseModel):
 
 @router.get("/models/current")
 async def get_current_model() -> Dict[str, Any]:
-    # For now, return mock data
-    # In production, this would query the actual loaded model
-    return {
-        "type": "base",
-        "path": "unsloth/Qwen2-VL-7B-Instruct",
-        "name": "Qwen2-VL 7B (Base)"
-    }
+    """Get information about currently loaded model."""
+    return model_manager.get_current_model_info()
 
 
 @router.get("/models/adapters")
 async def get_available_adapters() -> List[Dict[str, Any]]:
-    # For now, return empty list
-    # In production, this would scan the artifacts directory
-    return []
+    """Get list of available fine-tuned adapters."""
+    adapters = model_manager.get_available_adapters()
+    return [
+        {
+            "job_id": a["job_id"],
+            "path": a["path"],
+            "config": a["config"],
+            "name": os.path.basename(a["path"])
+        }
+        for a in adapters
+    ]
 
 
 @router.post("/models/switch")
 async def switch_model(request: ModelSwitchRequest) -> Dict[str, Any]:
-    # For now, just return success
-    # In production, this would actually switch the model
+    """Switch to a different model adapter."""
+    if request.adapter_path == "base":
+        success = model_manager.switch_to_base()
+    else:
+        success = model_manager.load_adapter(request.adapter_path)
+    
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to switch model")
+    
     return {
-        "message": f"Model switched to {request.adapter_path}",
-        "current_model": request.adapter_path
+        "message": "Model switched successfully",
+        "current_model": model_manager.get_current_model_info()
     }
 
 
