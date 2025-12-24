@@ -19,13 +19,24 @@ async def get_history(
     
     history_items = []
     for record in records:
-        # Create thumbnail URL (in production, this would be a proper image service)
-        thumbnail_url = f"/api/images/{record.id}/thumbnail"
+        # Convert absolute path to relative URL for serving
+        image_url = record.image_path
+        if image_url.startswith('/'):
+            # Already absolute path
+            pass
+        elif 'uploads' in image_url:
+            # Extract relative path
+            if 'uploads/' in image_url:
+                image_url = '/api/' + image_url.split('uploads/')[-1] if 'uploads/' in image_url else image_url
+            else:
+                image_url = '/api/uploads/' + image_url.split('/')[-1]
+        else:
+            image_url = '/api/uploads/' + image_url.split('/')[-1]
         
         history_items.append({
             "id": record.id,
-            "image_path": record.image_path,
-            "thumbnail_url": thumbnail_url,
+            "image_path": image_url,
+            "thumbnail_url": image_url,
             "latex": record.latex_output,
             "tokens": record.tokens_used,
             "time_ms": record.time_ms,

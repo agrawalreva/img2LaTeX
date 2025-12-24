@@ -46,10 +46,17 @@ def get_model_and_tokenizer():
             FastVisionModel.for_inference(_model)
         else:
             print("Unsloth not available, using transformers library...")
-            model_name = "Qwen/Qwen2-VL-7B-Instruct"
+            if device == "cuda":
+                model_name = "Qwen/Qwen2-VL-7B-Instruct"
+                print(f"Loading {model_name} for GPU...")
+            else:
+                # Use smaller 2B model for CPU - much faster
+                model_name = "Qwen/Qwen2-VL-2B-Instruct"
+                print(f"Using smaller {model_name} for CPU (faster inference)...")
+            
             print(f"Downloading model {model_name} (this may take several minutes)...")
             _processor = AutoProcessor.from_pretrained(model_name)
-            print("Loading model weights (this may take several minutes on CPU)...")
+            print("Loading model weights...")
             _model = Qwen2VLForConditionalGeneration.from_pretrained(
                 model_name,
                 torch_dtype=torch.float16 if device == "cuda" else torch.float32,

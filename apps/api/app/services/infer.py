@@ -27,13 +27,17 @@ async def run_inference_service(image_path: str) -> Tuple[str, int, int]:
         try:
             model, tokenizer = await asyncio.wait_for(
                 asyncio.to_thread(model_manager.get_model_and_tokenizer),
-                timeout=300.0  # 5 minute timeout
+                timeout=300.0  # 5 minute timeout for model loading
             )
         except asyncio.TimeoutError:
             raise HTTPException(
                 status_code=504,
                 detail="Model loading timed out. The model may be too large for this system."
             )
+        
+        # Add timeout for inference itself (especially important for CPU)
+        # CPU inference with 2B model should be much faster
+        inference_timeout = 60.0  # 1 minute timeout for inference
         
         image = Image.open(image_path).convert('RGB')
         
@@ -82,26 +86,42 @@ async def run_inference_service(image_path: str) -> Tuple[str, int, int]:
             eos_token_id = getattr(tokenizer, 'eos_token_id', None) or getattr(model.config, 'eos_token_id', None)
             input_ids_len = inputs['input_ids'].shape[1]
         
-        with torch.no_grad():
-            if is_processor:
-                # Qwen2VL requires all inputs from processor
-                outputs = model.generate(
-                    **inputs,
-                    max_new_tokens=settings.max_new_tokens,
-                    temperature=settings.temperature,
-                    do_sample=True,
-                    eos_token_id=eos_token_id
-                )
-            else:
-                outputs = model.generate(
-                    **inputs,
-                    max_new_tokens=settings.max_new_tokens,
-                    use_cache=True,
-                    temperature=settings.temperature,
-                    min_p=settings.min_p,
-                    do_sample=True,
-                    pad_token_id=eos_token_id
-                )
+        # Run inference with timeout and reduced tokens for CPU
+        inference_timeout = 60.0  # 1 minute timeout
+        max_tokens = min(settings.max_new_tokens, 128)  # Limit for CPU speed
+        
+        def run_generation():
+            with torch.no_grad():
+                if is_processor:
+                    # Qwen2VL requires all inputs from processor
+                    return model.generate(
+                        **inputs,
+                        max_new_tokens=max_tokens,
+                        temperature=settings.temperature,
+                        do_sample=True,
+                        eos_token_id=eos_token_id
+                    )
+                else:
+                    return model.generate(
+                        **inputs,
+                        max_new_tokens=max_tokens,
+                        use_cache=True,
+                        temperature=settings.temperature,
+                        min_p=settings.min_p,
+                        do_sample=True,
+                        pad_token_id=eos_token_id
+                    )
+        
+        try:
+            outputs = await asyncio.wait_for(
+                asyncio.to_thread(run_generation),
+                timeout=inference_timeout
+            )
+        except asyncio.TimeoutError:
+            raise HTTPException(
+                status_code=504,
+                detail=f"Inference timed out after {inference_timeout}s. Using 2B model should be faster - if still slow, the model may need GPU."
+            )
         
         # Decode output - handle both tokenizer and processor
         if hasattr(tokenizer, 'decode'):

@@ -129,8 +129,21 @@ export default function HistoryPanel({ onReRun, onCopyLatex }: HistoryPanelProps
             >
               {/* Thumbnail */}
               <div className="relative mb-3">
-                <div className="w-full h-20 bg-slate-100 rounded-md flex items-center justify-center">
-                  <ImageIcon className="w-6 h-6 text-slate-400" />
+                <div className="w-full h-20 bg-slate-100 rounded-md flex items-center justify-center overflow-hidden">
+                  {item.image_path ? (
+                    <img 
+                      src={item.image_path.startsWith('/') ? item.image_path : `/api${item.image_path}`}
+                      alt="Equation"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                        e.currentTarget.nextElementSibling.style.display = 'flex'
+                      }}
+                    />
+                  ) : null}
+                  <div className="w-full h-full bg-slate-100 flex items-center justify-center" style={{ display: item.image_path ? 'none' : 'flex' }}>
+                    <ImageIcon className="w-6 h-6 text-slate-400" />
+                  </div>
                 </div>
                 <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
               </div>
@@ -149,13 +162,16 @@ export default function HistoryPanel({ onReRun, onCopyLatex }: HistoryPanelProps
                   <span>{formatTime(item.created_at)}</span>
                 </div>
                 
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
+                  <span>{item.tokens} tokens</span>
+                  <span>•</span>
+                  <span>{item.time_ms}ms</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       handleCopyLatex(item.latex)
                     }}
-                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors ml-2"
                   >
                     <Copy className="w-3 h-3" />
                   </button>

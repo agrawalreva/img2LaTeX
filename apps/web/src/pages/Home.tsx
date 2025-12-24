@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertCircle, History } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import UploadZone from '../components/UploadZone'
 import LaTeXViewer from '../components/LaTeXViewer'
 
@@ -25,8 +25,6 @@ export default function Home() {
   const [result, setResult] = useState<InferenceResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sampleImages, setSampleImages] = useState<SampleImage[]>([])
-  const [history, setHistory] = useState<InferenceResult[]>([])
-  const [showHistory, setShowHistory] = useState(false)
 
   // Load sample images and history on component mount
   useEffect(() => {
@@ -39,12 +37,6 @@ export default function Home() {
           setSampleImages(sampleData.sample_images)
         }
         
-        // Load history
-        const historyResponse = await fetch('/api/history?limit=10')
-        if (historyResponse.ok) {
-          const historyData = await historyResponse.json()
-          setHistory(historyData)
-        }
       } catch (err) {
         console.error('Failed to load data:', err)
       }
@@ -93,13 +85,6 @@ export default function Home() {
 
       const data = await inferResponse.json()
       setResult(data)
-      
-      // Refresh history
-      const historyResponse = await fetch('/api/history?limit=10')
-      if (historyResponse.ok) {
-        const historyData = await historyResponse.json()
-        setHistory(historyData)
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -129,13 +114,6 @@ export default function Home() {
 
       const data = await response.json()
       setResult(data)
-      
-      // Refresh history
-      const historyResponse = await fetch('/api/history?limit=10')
-      if (historyResponse.ok) {
-        const historyData = await historyResponse.json()
-        setHistory(historyData)
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -147,22 +125,13 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-slate-800">img2LaTeX AI</h1>
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-          >
-            <History className="h-4 w-4 mr-2" />
-            History
-          </button>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
             {/* Sample Images */}
             {sampleImages.length > 0 && (
               <motion.div
@@ -269,42 +238,6 @@ export default function Home() {
             </AnimatePresence>
           </div>
 
-          {/* History Sidebar */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-xl border border-slate-200 p-6"
-            >
-              <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                <History className="h-5 w-5 mr-2" />
-                Recent Conversions
-              </h3>
-              <div className="space-y-3">
-                {history.length === 0 ? (
-                  <p className="text-slate-500 text-sm">No conversions yet</p>
-                ) : (
-                  history.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-3 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"
-                      onClick={() => {
-                        setResult(item)
-                        setSelectedImage(null)
-                      }}
-                    >
-                      <div className="text-sm font-mono text-slate-800 mb-1 truncate">
-                        {item.latex}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {item.tokens} tokens • {item.time_ms}ms
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          </div>
         </div>
       </div>
     </div>

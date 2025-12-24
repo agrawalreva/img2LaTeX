@@ -10,9 +10,6 @@ interface LayoutProps {
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Dataset', href: '/dataset', icon: Database },
-  { name: 'Train', href: '/train', icon: Train },
-  { name: 'Evaluate', href: '/evaluate', icon: TrendingUp },
 ]
 
 interface HistoryItem {

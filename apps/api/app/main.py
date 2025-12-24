@@ -14,6 +14,12 @@ app = FastAPI(title="img2LaTeX AI API")
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Mount uploads directory for serving uploaded images
+from pathlib import Path
+uploads_dir = Path(__file__).parent.parent / "uploads"
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/api/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
