@@ -144,7 +144,7 @@ export default function Home() {
                 <p className="text-slate-600 mb-4 text-sm">
                   Drag any equation below into the upload area to convert it to LaTeX:
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {sampleImages.map((sample) => (
                     <motion.div
                       key={sample.id}

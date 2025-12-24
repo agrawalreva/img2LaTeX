@@ -113,9 +113,16 @@ async def get_sample_images() -> Dict[str, Any]:
     
     sample_images = []
     
+    # Images to exclude
+    exclude_images = {
+        "Eulers-equation.png",
+        "eulers_identity.png",
+        "gaussian_integral.png"
+    }
+    
     if os.path.exists(static_dir):
         for filename in os.listdir(static_dir):
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg')) and filename not in exclude_images:
                 metadata = image_metadata.get(filename, {
                     "id": filename.replace('.', '_').replace(' ', '_').lower(),
                     "name": filename.replace('_', ' ').replace('.png', '').replace('.jpg', '').replace('.jpeg', '').title(),
