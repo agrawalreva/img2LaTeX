@@ -164,7 +164,7 @@ export default function Home() {
                         </div>
                         <div className="w-full h-24 bg-slate-100 rounded border-2 border-dashed border-slate-300 flex items-center justify-center mb-2 overflow-hidden">
                           <img 
-                            src={`http://localhost:8000${sample.url}`}
+                            src={sample.url}
                             alt={sample.name}
                             className="max-w-full max-h-full object-contain"
                             onError={(e) => {
