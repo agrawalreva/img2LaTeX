@@ -64,42 +64,71 @@ async def get_sample_images() -> Dict[str, Any]:
     """Get list of sample images for testing."""
     import os
     static_dir = os.path.join(os.path.dirname(__file__), "../../static/samples")
-    sample_images = []
     
-    # Add images from assets folder
-    assets_images = [
-        {
+    # Map of filenames to metadata
+    image_metadata = {
+        "Eulers-equation.png": {
             "id": "eulers_equation",
             "name": "Euler's Equation",
             "description": "Euler's famous identity",
-            "filename": "Eulers-equation.png",
             "expected_latex": "e^{i\\pi} + 1 = 0"
         },
-        {
+        "eulers_identity.png": {
+            "id": "eulers_identity",
+            "name": "Euler's Identity",
+            "description": "Euler's identity equation",
+            "expected_latex": "e^{i\\pi} + 1 = 0"
+        },
+        "equation2.jpeg": {
             "id": "equation2",
-            "name": "Mathematical Equation",
-            "description": "Complex mathematical expression",
-            "filename": "equation2.jpeg",
+            "name": "Linear Equation",
+            "description": "Simple linear equation",
             "expected_latex": "2x - 3 = -7"
         },
-        {
+        "long_equation.jpg": {
             "id": "long_equation",
-            "name": "Long Equation",
-            "description": "Extended mathematical formula",
-            "filename": "long_equation.jpg",
+            "name": "Gaussian Integral",
+            "description": "Gaussian integral formula",
             "expected_latex": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
+        },
+        "gaussian_integral.png": {
+            "id": "gaussian_integral",
+            "name": "Gaussian Integral",
+            "description": "Gaussian integral",
+            "expected_latex": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
+        },
+        "pythagorean_theorem.png": {
+            "id": "pythagorean",
+            "name": "Pythagorean Theorem",
+            "description": "Pythagorean theorem",
+            "expected_latex": "a^2 + b^2 = c^2"
+        },
+        "quadratic_formula.png": {
+            "id": "quadratic",
+            "name": "Quadratic Formula",
+            "description": "Quadratic formula",
+            "expected_latex": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"
         }
-    ]
+    }
     
-    for img in assets_images:
-        file_path = os.path.join(static_dir, img["filename"])
-        if os.path.exists(file_path):
-            sample_images.append({
-                "id": img["id"],
-                "name": img["name"],
-                "description": img["description"],
-                "url": f"/static/samples/{img['filename']}",
-                "expected_latex": img["expected_latex"]
-            })
+    sample_images = []
+    
+    if os.path.exists(static_dir):
+        for filename in os.listdir(static_dir):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                metadata = image_metadata.get(filename, {
+                    "id": filename.replace('.', '_').replace(' ', '_').lower(),
+                    "name": filename.replace('_', ' ').replace('.png', '').replace('.jpg', '').replace('.jpeg', '').title(),
+                    "description": "Mathematical equation",
+                    "expected_latex": ""
+                })
+                
+                sample_images.append({
+                    "id": metadata["id"],
+                    "name": metadata["name"],
+                    "description": metadata["description"],
+                    "url": f"/static/samples/{filename}",
+                    "expected_latex": metadata["expected_latex"]
+                })
     
     return {"sample_images": sample_images}
