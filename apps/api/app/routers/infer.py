@@ -62,28 +62,44 @@ async def infer(
 @router.get("/sample-images")
 async def get_sample_images() -> Dict[str, Any]:
     """Get list of sample images for testing."""
-    sample_images = [
+    import os
+    static_dir = os.path.join(os.path.dirname(__file__), "../../static/samples")
+    sample_images = []
+    
+    # Add images from assets folder
+    assets_images = [
         {
             "id": "eulers_equation",
             "name": "Euler's Equation",
-            "description": "Euler's famous equation",
-            "url": "/static/samples/Eulers-equation.png",
+            "description": "Euler's famous identity",
+            "filename": "Eulers-equation.png",
             "expected_latex": "e^{i\\pi} + 1 = 0"
         },
         {
-            "id": "equation2", 
+            "id": "equation2",
             "name": "Mathematical Equation",
             "description": "Complex mathematical expression",
-            "url": "/static/samples/equation2.jpeg",
-            "expected_latex": "\\frac{d}{dx}[f(x)] = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}"
+            "filename": "equation2.jpeg",
+            "expected_latex": "2x - 3 = -7"
         },
         {
             "id": "long_equation",
             "name": "Long Equation",
             "description": "Extended mathematical formula",
-            "url": "/static/samples/long_equation.jpg", 
+            "filename": "long_equation.jpg",
             "expected_latex": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}"
         }
     ]
+    
+    for img in assets_images:
+        file_path = os.path.join(static_dir, img["filename"])
+        if os.path.exists(file_path):
+            sample_images.append({
+                "id": img["id"],
+                "name": img["name"],
+                "description": img["description"],
+                "url": f"/static/samples/{img['filename']}",
+                "expected_latex": img["expected_latex"]
+            })
     
     return {"sample_images": sample_images}
