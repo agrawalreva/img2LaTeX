@@ -1,4 +1,8 @@
 import os
+import json
+import uuid
+import sys
+from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -7,6 +11,12 @@ from pydantic import BaseModel
 from app.db.base import get_db
 from app.db.repository import TrainJobRepository, PairRepository
 from app.core.config import settings
+
+# Add worker path for Celery import
+worker_path = Path(__file__).parent.parent.parent.parent.parent / "apps" / "worker"
+sys.path.insert(0, str(worker_path))
+
+from apps.worker.tasks.train_lora import train_lora
 
 router = APIRouter()
 
@@ -23,7 +33,6 @@ async def start_training(
     config: TrainingConfig,
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
-    # Check if we have enough data
     pairs = PairRepository.get_all(db)
     if len(pairs) < 5:
         raise HTTPException(
@@ -31,37 +40,49 @@ async def start_training(
             detail="Need at least 5 image-LaTeX pairs to start training"
         )
     
-    # For now, just create a mock training job
-    # In production, this would enqueue a Celery task
+    job_id = str(uuid.uuid4())
+    config_dict = config.dict()
+    config_json = json.dumps(config_dict)
+    
     job = TrainJobRepository.create(
         db=db,
-        config=config.dict(),
-        status="pending"
+        job_id=job_id,
+        config=config_json
     )
     
+    train_lora.delay(job_id, config_dict)
+    
     return {
-        "job_id": job.id,
-        "status": "pending",
-        "message": "Training job created (mock - Celery integration pending)"
+        "job_id": job_id,
+        "status": "QUEUED",
+        "message": "Training job queued"
     }
 
 
 @router.get("/train/{job_id}/status")
 async def get_training_status(
-    job_id: int,
+    job_id: str,
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     job = TrainJobRepository.get_by_id(db, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Training job not found")
     
+    try:
+        config = json.loads(job.config)
+    except:
+        config = job.config
+    
+    logs = job.logs.split('\n') if job.logs else []
+    
     return {
-        "job_id": job.id,
+        "job_id": job.job_id,
         "status": job.status,
-        "config": job.config,
-        "logs": job.logs or [],
-        "created_at": job.created_at,
-        "updated_at": job.updated_at
+        "config": config,
+        "logs": logs,
+        "artifacts_path": job.artifacts_path,
+        "created_at": job.created_at.isoformat() if job.created_at else None,
+        "updated_at": job.updated_at.isoformat() if job.updated_at else None
     }
 
 
@@ -69,13 +90,14 @@ async def get_training_status(
 async def list_training_jobs(
     db: Session = Depends(get_db)
 ) -> List[Dict[str, Any]]:
-    jobs = TrainJobRepository.get_all(db)
+    from app.db.models import TrainJob
+    jobs = db.query(TrainJob).order_by(TrainJob.created_at.desc()).all()
     return [
         {
-            "job_id": job.id,
+            "job_id": job.job_id,
             "status": job.status,
-            "config": job.config,
-            "created_at": job.created_at
+            "config": json.loads(job.config) if job.config else {},
+            "created_at": job.created_at.isoformat() if job.created_at else None
         }
         for job in jobs
     ]
