@@ -125,8 +125,8 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-slate-800">img2LaTeX AI</h1>
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-slate-800">img2LaTeX AI</h1>
         </div>
       </div>
 
