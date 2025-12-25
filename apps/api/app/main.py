@@ -1,21 +1,19 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.db.base import engine
 from app.db.models import Base
-from app.routers import infer, history, dataset, train, models, evaluate
+from app.routers import infer, history, models
 
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="img2LaTeX AI API")
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+static_dir = Path(__file__).parent.parent / "static"
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
-# Mount uploads directory for serving uploaded images
-from pathlib import Path
 uploads_dir = Path(__file__).parent.parent / "uploads"
 uploads_dir.mkdir(exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
@@ -28,13 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(infer.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
-app.include_router(dataset.router, prefix="/api")
-app.include_router(train.router, prefix="/api")
 app.include_router(models.router, prefix="/api")
-app.include_router(evaluate.router, prefix="/api")
 
 
 @app.get("/health")

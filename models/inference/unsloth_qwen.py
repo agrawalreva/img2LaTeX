@@ -20,11 +20,9 @@ _tokenizer = None
 
 
 def get_model_and_tokenizer():
-    """Get or initialize the model and tokenizer."""
     global _model, _tokenizer
     
     if _model is None or _tokenizer is None:
-        print("Loading Qwen2-VL model...")
         
         device = "cuda" if torch.cuda.is_available() else "cpu"
         
@@ -36,7 +34,6 @@ def get_model_and_tokenizer():
                     use_gradient_checkpointing="unsloth"
                 )
             else:
-                print("Loading full precision model for CPU inference...")
                 _model, _tokenizer = FastVisionModel.from_pretrained(
                     "unsloth/Qwen2-VL-7B-Instruct",
                     load_in_4bit=False,
@@ -45,58 +42,34 @@ def get_model_and_tokenizer():
                 )
             FastVisionModel.for_inference(_model)
         else:
-            print("Unsloth not available, using transformers library...")
             if device == "cuda":
                 model_name = "Qwen/Qwen2-VL-7B-Instruct"
-                print(f"Loading {model_name} for GPU...")
             else:
-                # Use smaller 2B model for CPU - much faster
                 model_name = "Qwen/Qwen2-VL-2B-Instruct"
-                print(f"Using smaller {model_name} for CPU (faster inference)...")
             
-            print(f"Downloading model {model_name} (this may take several minutes)...")
             _processor = AutoProcessor.from_pretrained(model_name)
-            print("Loading model weights...")
             _model = Qwen2VLForConditionalGeneration.from_pretrained(
                 model_name,
                 torch_dtype=torch.float16 if device == "cuda" else torch.float32,
                 device_map="auto" if device == "cuda" else None,
                 low_cpu_mem_usage=True
             )
-            # Store processor, not just tokenizer, for Qwen2VL
             _tokenizer = _processor
-        
-        print(f"Model loaded successfully on {device}!")
     
     return _model, _tokenizer
 
 
 def get_image_hash(image_path: str) -> str:
-    """Generate hash for image caching."""
     with open(image_path, 'rb') as f:
         return hashlib.md5(f.read()).hexdigest()
 
 
 def run_inference(image_path: str, max_new_tokens: int = 256, temperature: float = 0.7, min_p: float = 0.1) -> Tuple[str, int, int]:
-    """
-    Run inference on an image to generate LaTeX.
-    
-    Args:
-        image_path: Path to the image file
-        max_new_tokens: Maximum number of tokens to generate
-        temperature: Sampling temperature
-        min_p: Minimum probability threshold
-        
-    Returns:
-        Tuple of (latex_output, tokens_used, time_ms)
-    """
     start_time = time.time()
     
     try:
         # Check if CUDA is available
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        if device == "cpu":
-            print("Warning: CUDA not available, using CPU (this will be slow)")
         
         # Load model and tokenizer
         model, tokenizer = get_model_and_tokenizer()
@@ -154,17 +127,6 @@ def run_inference(image_path: str, max_new_tokens: int = 256, temperature: float
 
 
 def run_inference_with_cache(image_path: str, cache_dir: Optional[str] = None, **kwargs) -> Tuple[str, int, int]:
-    """
-    Run inference with simple caching based on image hash.
-    
-    Args:
-        image_path: Path to the image file
-        cache_dir: Directory for cache files (optional)
-        **kwargs: Additional arguments for run_inference
-        
-    Returns:
-        Tuple of (latex_output, tokens_used, time_ms)
-    """
     if cache_dir is None:
         cache_dir = tempfile.gettempdir()
     

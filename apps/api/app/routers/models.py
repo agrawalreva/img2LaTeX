@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 from app.core.config import settings
 
-# Add project root to path for model imports
 project_root = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -28,13 +27,11 @@ class GenerationSettings(BaseModel):
 
 @router.get("/models/current")
 async def get_current_model() -> Dict[str, Any]:
-    """Get information about currently loaded model."""
     return model_manager.get_current_model_info()
 
 
 @router.get("/models/adapters")
 async def get_available_adapters() -> List[Dict[str, Any]]:
-    """Get list of available fine-tuned adapters."""
     adapters = model_manager.get_available_adapters()
     return [
         {
@@ -49,7 +46,6 @@ async def get_available_adapters() -> List[Dict[str, Any]]:
 
 @router.post("/models/switch")
 async def switch_model(request: ModelSwitchRequest) -> Dict[str, Any]:
-    """Switch to a different model adapter."""
     if request.adapter_path == "base":
         success = model_manager.switch_to_base()
     else:

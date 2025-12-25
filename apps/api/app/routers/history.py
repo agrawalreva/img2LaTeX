@@ -13,14 +13,11 @@ async def get_history(
     limit: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db)
 ) -> List[Dict[str, Any]]:
-    """Get recent inference history with thumbnails."""
-    
     records = InferenceRepository.get_recent(db, limit=limit)
     
     history_items = []
+    import os
     for record in records:
-        # Convert file path to URL for serving
-        import os
         filename = os.path.basename(record.image_path)
         image_url = f"/api/uploads/{filename}"
         

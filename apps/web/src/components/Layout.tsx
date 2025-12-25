@@ -21,11 +21,9 @@ export default function Layout({ children }: LayoutProps) {
   const [showHistory, setShowHistory] = useState(false)
 
   const handleReRun = (item: HistoryItem) => {
-    console.log('Re-run inference for:', item)
   }
 
   const handleCopyLatex = (latex: string) => {
-    console.log('Copied LaTeX:', latex)
   }
 
   return (

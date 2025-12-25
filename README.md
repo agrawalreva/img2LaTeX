@@ -4,31 +4,33 @@ image-to-LaTeX conversion system using Qwen2-VL-7B vision-language model with Lo
 
 ## Setup
 
-```bash
-# Build and start all services
-make build
-make up
+### Backend
 
-# View logs
-make logs
+```bash
+cd apps/api
+pip install -e .
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Frontend
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+### Development Script
+
+```bash
+# Start both backend and frontend
+./start-dev.sh
 ```
 
 Services:
 - API: http://localhost:8000
 - Web: http://localhost:3000
 - API Docs: http://localhost:8000/docs
-
-### Development
-
-```bash
-# Start development environment
-make dev
-
-# View service-specific logs
-make api-logs
-make web-logs
-make worker-logs
-```
 
 ## Usage
 
