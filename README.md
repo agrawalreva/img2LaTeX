@@ -1,6 +1,30 @@
 # img2LaTeX AI
 
-image-to-LaTeX conversion system using Qwen2-VL-7B vision-language model with LoRA fine-tuning.
+Image to LaTeX conversion system using Qwen2-VL vision-language model.
+
+## Demo
+
+### 1. Landing Page
+![Landing Page](demo/landing.png)
+
+The home page provides an interface to upload equation images. You can either:
+- Drag and drop an image file
+- Click to browse and select an image
+- Use one of the sample equations provided
+
+### 2. Conversion Process
+![Conversion](demo/conversion.png)
+
+Once you upload an image, the system:
+1. Processes the image through the Qwen2-VL model
+2. Generates LaTeX code for the mathematical equation
+3. Displays the result with token usage and processing time
+4. Allows you to copy the LaTeX or download it as a `.tex` file
+
+### 3. LaTeX Output Tested 
+![Overleaf](demo/overleaf.png)
+
+The history panel (button in the top-left) keeps track of all your previous conversions.
 
 ## Setup
 
@@ -34,57 +58,35 @@ Services:
 
 ## Usage
 
-### Inference
+### Web Interface
 
-Upload an image via the web UI or API:
+1. Start the development servers (see Setup above)
+2. Open http://localhost:3000 in your browser
+3. Upload an equation image or use a sample equation
+4. Copy or download the generated LaTeX code
+
+### API
+
+Upload an image via the API:
 
 ```bash
 curl -X POST "http://localhost:8000/api/infer" \
   -F "image=@path/to/equation.png"
 ```
 
-### Training
-
-1. Build dataset by correcting LaTeX outputs in Dataset page
-2. Configure training parameters in Train page
-3. Start training job (requires 5+ dataset pairs)
-4. Monitor progress and switch to trained adapter when complete
-
-### Evaluation
-
-Use the Evaluate page to test model performance on sample equations with accuracy and similarity metrics.
-
-## API Endpoints
-
-- `POST /api/infer` - Generate LaTeX from image
-- `GET /api/history` - Get inference history
-- `GET /api/dataset/pairs` - List dataset pairs
-- `POST /api/train` - Start training job
-- `GET /api/train/{job_id}/status` - Get training status
-- `POST /api/evaluate` - Evaluate model on test pairs
-- `GET /api/models/current` - Get current model info
-- `POST /api/models/switch` - Switch model adapter
-
-## Configuration
-
-Environment variables:
-
-- `DATABASE_URL` - Database connection string
-- `REDIS_URL` - Redis connection string
-- `ARTIFACTS_DIR` - Training output directory
-- `UPLOAD_DIR` - Uploaded images directory
-- `MAX_NEW_TOKENS` - Max tokens for generation (default: 256)
-- `TEMPERATURE` - Sampling temperature (default: 0.7)
-- `MIN_P` - Minimum probability threshold (default: 0.1)
-
-## Project Structure
-
+Response:
+```json
+{
+  "latex": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+  "tokens": 29,
+  "time_ms": 39539,
+  "id": 1
+}
 ```
-apps/
-  api/          # FastAPI backend
-  web/          # React frontend
-  worker/       # Celery worker
-models/
-  inference/    # Model loading and inference
-  training/     # Training outputs
-```
+
+## Tech Stack
+
+- **Backend**: FastAPI, SQLAlchemy, SQLite
+- **Frontend**: React, TypeScript, Tailwind CSS, Framer Motion
+- **ML Model**: Qwen2-VL (2B for CPU, 7B for GPU)
+- **Inference**: PyTorch, Transformers, Unsloth (optional)
